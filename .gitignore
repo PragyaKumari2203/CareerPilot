@@ -1,7 +1,7 @@
 
 src/guidelines/Guidelines.md
 
-node_modules/
+Frontend/node_modules/
 
 # Build output
 dist/
@@ -31,4 +31,4 @@ pnpm-debug.log*
 coverage/
 .nyc_output/
 
-
+helper.txt
