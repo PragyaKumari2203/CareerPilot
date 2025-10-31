@@ -1,0 +1,34 @@
+
+src/guidelines/Guidelines.md
+
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Vite cache
+.vite/
+
+# Environment files (local secrets)
+.env
+.env.*.local
+.env.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Editor directories and system files
+.DS_Store
+.vscode/
+.idea/
+
+# Coverage and test output
+coverage/
+.nyc_output/
+
+
