@@ -19,7 +19,6 @@ router.post("/", async (req, res) => {
   try {
     const data = req.body;
     const existing = await User.findOne({ github: data.github });
-
     if (existing) {
       const updated = await User.findOneAndUpdate({ github: data.github }, data, {
         new: true,
