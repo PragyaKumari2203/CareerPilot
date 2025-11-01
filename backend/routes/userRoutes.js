@@ -1,5 +1,6 @@
 import express from "express";
 import { User } from "../models/User.js";
+import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -14,10 +15,18 @@ router.get("/:github", async (req, res) => {
   }
 });
 
-// POST (create or update user)
-router.post("/", async (req, res) => {
+// POST (create or update user) — protected so only authenticated users can create/update their profile
+router.post("/", authMiddleware, async (req, res) => {
   try {
-    const data = req.body;
+    const data = req.body || {};
+
+    if (req.user) {
+      if (!data.email) data.email = req.user.email;
+      if (!data.name) data.name = req.user.name;
+    }
+
+    if (!data.github) return res.status(400).json({ message: "`github` username is required" });
+
     const existing = await User.findOne({ github: data.github });
     if (existing) {
       const updated = await User.findOneAndUpdate({ github: data.github }, data, {

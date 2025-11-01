@@ -20,49 +20,72 @@ export function AuthPage({ onLogin, onBack }: AuthPageProps) {
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Mock login - in real app, this would call backend API
-    if (loginEmail && loginPassword) {
-      const mockUser: User = {
-        id: '1',
-        name: 'Demo User',
-        email: loginEmail,
-        skills: ['React', 'JavaScript', 'Python'],
-        education: [
-          { degree: 'BTech CSE', institution: 'SBU', year: '2026' }
-        ],
-        interests: ['Web Development', 'AI/ML', 'Data Science']
-      };
-      
-      toast.success('Login successful!');
-      onLogin(mockUser);
-    } else {
-      toast.error('Please fill in all fields');
-    }
-  };
+  // inside AuthPage component (modify existing handlers)
+const API = "http://localhost:5001/api/auth";
 
-  const handleSignup = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Mock signup
-    if (signupName && signupEmail && signupPassword) {
-      const newUser: User = {
-        id: '1',
+const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+  try {
+    if (!loginEmail || !loginPassword) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    const res = await fetch(`${API}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include", // important: accept httpOnly cookie
+      body: JSON.stringify({ email: loginEmail, password: loginPassword }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      toast.error(data.message || "Login failed");
+      return;
+    }
+
+    toast.success("Login successful!");
+    onLogin(data.user);
+  } catch (err) {
+    console.error(err);
+    toast.error("Network error");
+  }
+};
+
+const handleSignup = async (e: React.FormEvent) => {
+  e.preventDefault();
+  try {
+    if (!signupName || !signupEmail || !signupPassword) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    const res = await fetch(`${API}/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
         name: signupName,
         email: signupEmail,
-        skills: [],
-        education: [],
-        interests: []
-      };
-      
-      toast.success('Account created successfully!');
-      onLogin(newUser);
-    } else {
-      toast.error('Please fill in all fields');
+        password: signupPassword,
+        github: "", // optional fields if you want
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      toast.error(data.message || "Signup failed");
+      return;
     }
-  };
+
+    toast.success("Account created successfully!");
+    onLogin(data.user);
+  } catch (err) {
+    console.error(err);
+    toast.error("Network error");
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/10 flex items-center justify-center p-4">
@@ -117,9 +140,6 @@ export function AuthPage({ onLogin, onBack }: AuthPageProps) {
                 <Button type="submit" className="w-full">
                   Login
                 </Button>
-                <p className="text-xs text-center text-muted-foreground mt-4">
-                  Demo: Use any email/password to login
-                </p>
               </form>
             </TabsContent>
 
