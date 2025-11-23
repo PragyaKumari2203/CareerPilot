@@ -235,3 +235,8 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
     </div>
   );
 }
+
+
+
+
+
