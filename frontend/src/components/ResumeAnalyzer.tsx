@@ -87,23 +87,22 @@ export function ResumeAnalyzer({ user, onNavigate }: ResumeAnalyzerProps) {
       onNavigate={onNavigate}
       userName={user.name}
     >
-      <div className="p-8">
-        <div className="mb-8">
-          <h1 className="mb-2">Resume Analyzer</h1>
-          <p className="text-muted-foreground">
-            Upload your resume and optionally enter a job description for
-            AI-powered analysis.
+      <div className="p-4 sm:p-6 lg:p-8">
+        <div className="mb-8 text-center">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl mb-2">Resume Analyzer</h1>
+          <p className="text-muted-foreground mx-auto max-w-2xl">
+            Upload your resume and optionally enter a job description for AI-powered analysis.
           </p>
         </div>
 
-        <div className="max-w-4xl space-y-6">
+       <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-6">
           {/* Upload Section */}
-          <Card className="p-8 space-y-6">
+          <Card className="p-4 sm:p-6 lg:p-8 space-y-6">
             <div className="flex flex-col items-center justify-center text-center">
-              <div className="size-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                <Upload className="size-8 text-primary" />
+              <div className="size-12 sm:size-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+  <Upload className="size-6 sm:size-8 text-primary" />
               </div>
-              <h3 className="mb-2">Upload Your Resume</h3>
+              <h3 className="text-lg sm:text-xl mb-2">Upload Your Resume</h3>
               <p className="text-sm text-muted-foreground mb-6">
                 Supported formats: PDF, DOCX (Max size: 5MB)
               </p>
@@ -169,7 +168,7 @@ export function ResumeAnalyzer({ user, onNavigate }: ResumeAnalyzerProps) {
               <Card className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3>Overall Resume Score</h3>
-                  <div className="text-3xl text-primary">{analysis.score}%</div>
+                  <div className="text-2xl sm:text-3xl font-bold text-primary">{analysis.score}%</div>
                 </div>
                 <Progress value={analysis.score} className="h-3" />
                 <p className="text-sm text-muted-foreground mt-2">
@@ -254,7 +253,7 @@ export function ResumeAnalyzer({ user, onNavigate }: ResumeAnalyzerProps) {
               </Card>
 
               {/* Action Buttons */}
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <Button onClick={() => onNavigate('resume-builder')}>
                   Build Improved Resume
                 </Button>
