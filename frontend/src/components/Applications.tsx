@@ -10,7 +10,10 @@ import {
   Calendar,
   Building2,
   MapPin,
-  ExternalLink
+  ExternalLink,
+  Edit,
+  Save,
+  X
 } from 'lucide-react';
 import type { User, Page } from '../App';
 import { useState, useEffect } from 'react';
@@ -27,7 +30,6 @@ type Application = {
   location: string;
   appliedDate: string;
   status: 'pending' | 'interview' | 'rejected' | 'accepted';
-  nextStep?: string;
   notes?: string;
   jobUrl?: string;
 };
@@ -35,6 +37,8 @@ type Application = {
 export function Applications({ user, onNavigate }: ApplicationsProps) {
   const [applications, setApplications] = useState<Application[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editFormData, setEditFormData] = useState<Partial<Application>>({});
   const [formData, setFormData] = useState({
     jobTitle: '',
     company: '',
@@ -78,74 +82,124 @@ export function Applications({ user, onNavigate }: ApplicationsProps) {
     }));
   };
 
+  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setEditFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  
-  try {
-    const newApplication = {
-      ...formData,
-      appliedDate: new Date().toISOString().split('T')[0],
-      userId: (user as any)._id,
-      authUserId: (user as any).authUserId
-    };
+    e.preventDefault();
     
-    console.log('Sending application data:', newApplication); 
-
-    const response = await fetch(`${API_BASE}/applications`, {
-      method: 'POST',
-      credentials: "include",
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(newApplication),
-    });
-
-    console.log('Response status:', response.status); 
-    
-    if (response.ok) {
-      const savedApplication = await response.json();
-      console.log('Saved application:', savedApplication); 
-      setApplications(prev => [...prev, savedApplication]);
+    try {
+      const newApplication = {
+        ...formData,
+        appliedDate: new Date().toISOString().split('T')[0],
+        userId: (user as any)._id,
+        authUserId: (user as any).authUserId
+      };
       
-      // Reset form
-      setFormData({
-        jobTitle: '',
-        company: '',
-        location: '',
-        status: 'pending',
-        notes: '',
-        jobUrl: ''
+      console.log('Sending application data:', newApplication); 
+
+      const response = await fetch(`${API_BASE}/applications`, {
+        method: 'POST',
+        credentials: "include",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newApplication),
       });
-    } else {
-      const errorText = await response.text();
-      console.error('Failed to add application. Error:', errorText);
+
+      console.log('Response status:', response.status); 
+      
+      if (response.ok) {
+        const savedApplication = await response.json();
+        console.log('Saved application:', savedApplication); 
+        setApplications(prev => [...prev, savedApplication]);
+        
+        // Reset form
+        setFormData({
+          jobTitle: '',
+          company: '',
+          location: '',
+          status: 'pending',
+          notes: '',
+          jobUrl: ''
+        });
+      } else {
+        const errorText = await response.text();
+        console.error('Failed to add application. Error:', errorText);
+      }
+    } catch (error) {
+      console.error('Error adding application:', error);
     }
-  } catch (error) {
-    console.error('Error adding application:', error);
-  }
-};
+  };
 
-const handleDeleteApplication = async (applicationId: number) => {
-  if (!confirm('Are you sure you want to delete this application?')) {
-    return;
-  }
-
-  try {
-    const response = await fetch(`${API_BASE}/applications/${applicationId}`, {
-      method: 'DELETE',
+  const handleEditApplication = (application: Application) => {
+    setEditingId(application._id);
+    setEditFormData({
+      jobTitle: application.jobTitle,
+      company: application.company,
+      location: application.location,
+      status: application.status,
+      notes: application.notes || '',
+      jobUrl: application.jobUrl || ''
     });
+  };
 
-    if (response.ok) {
-      // Remove the application from the state
-      setApplications(prev => prev.filter(app => app._id !== applicationId));
-      console.log('Application deleted successfully');
-    } else {
-      console.error('Failed to delete application');
+  const handleSaveEdit = async (applicationId: number) => {
+    try {
+      const response = await fetch(`${API_BASE}/applications/${applicationId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editFormData),
+      });
+
+      if (response.ok) {
+        const updatedApplication = await response.json();
+        setApplications(prev => 
+          prev.map(app => app._id === applicationId ? updatedApplication : app)
+        );
+        setEditingId(null);
+        setEditFormData({});
+        console.log('Application updated successfully');
+      } else {
+        console.error('Failed to update application');
+      }
+    } catch (error) {
+      console.error('Error updating application:', error);
     }
-  } catch (error) {
-    console.error('Error deleting application:', error);
-  }
-};
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditFormData({});
+  };
+
+  const handleDeleteApplication = async (applicationId: number) => {
+    if (!confirm('Are you sure you want to delete this application?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/applications/${applicationId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setApplications(prev => prev.filter(app => app._id !== applicationId));
+        console.log('Application deleted successfully');
+      } else {
+        console.error('Failed to delete application');
+      }
+    } catch (error) {
+      console.error('Error deleting application:', error);
+    }
+  };
 
   const getStatusIcon = (status: Application['status']) => {
     switch (status) {
@@ -186,78 +240,173 @@ const handleDeleteApplication = async (applicationId: number) => {
     rejected: filterByStatus('rejected').length,
   };
 
- const ApplicationCard = ({ app }: { app: Application }) => (
-  <Card className="p-6">
-    <div className="flex items-start justify-between mb-4">
-      <div className="flex-1">
-        <div className="flex items-center gap-2 mb-2">
-          {getStatusIcon(app.status)}
-          <h3>{app.jobTitle}</h3>
+  const ApplicationCard = ({ app }: { app: Application }) => (
+    <Card className="p-6">
+      {editingId === app._id ? (
+        // Edit Mode
+        <div className="space-y-4">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Job Title</label>
+              <input 
+                type="text" 
+                name="jobTitle"
+                value={editFormData.jobTitle || ''}
+                onChange={handleEditInputChange}
+                className="w-full border rounded-lg p-2"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Company</label>
+              <input 
+                type="text" 
+                name="company"
+                value={editFormData.company || ''}
+                onChange={handleEditInputChange}
+                className="w-full border rounded-lg p-2"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Location</label>
+              <input 
+                type="text" 
+                name="location"
+                value={editFormData.location || ''}
+                onChange={handleEditInputChange}
+                className="w-full border rounded-lg p-2"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Status</label>
+              <select 
+                name="status"
+                value={editFormData.status || 'pending'}
+                onChange={handleEditInputChange}
+                className="w-full border rounded-lg p-2"
+              >
+                <option value="pending">Pending</option>
+                <option value="interview">Interview</option>
+                <option value="accepted">Accepted</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Job URL</label>
+              <input 
+                type="url" 
+                name="jobUrl"
+                value={editFormData.jobUrl || ''}
+                onChange={handleEditInputChange}
+                className="w-full border rounded-lg p-2"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Notes</label>
+            <textarea 
+              name="notes"
+              value={editFormData.notes || ''}
+              onChange={handleEditInputChange}
+              className="w-full border rounded-lg p-2"
+              rows={3}
+            />
+          </div>
+          <div className="flex gap-2 justify-end">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleCancelEdit}
+            >
+              <X className="size-4 mr-2" />
+              Cancel
+            </Button>
+            <Button 
+              variant="default" 
+              size="sm"
+              onClick={() => handleSaveEdit(app._id)}
+            >
+              <Save className="size-4 mr-2" />
+              Save
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2 mb-2">
-          <Building2 className="size-4 text-muted-foreground" />
-          <span className="text-sm">{app.company}</span>
-        </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <MapPin className="size-4" />
-          <span>{app.location}</span>
-        </div>
-      </div>
-      {getStatusBadge(app.status)}
-    </div>
+      ) : (
+        // View Mode
+        <>
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                {getStatusIcon(app.status)}
+                <h3 className="font-semibold">{app.jobTitle}</h3>
+              </div>
+              <div className="flex items-center gap-2 mb-2">
+                <Building2 className="size-4 text-muted-foreground" />
+                <span className="text-sm">{app.company}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <MapPin className="size-4" />
+                <span>{app.location}</span>
+              </div>
+            </div>
+            {getStatusBadge(app.status)}
+          </div>
 
-    <div className="space-y-2 mb-4">
-      <div className="flex items-center gap-2 text-sm">
-        <Calendar className="size-4 text-muted-foreground" />
-        <span className="text-muted-foreground">Applied:</span>
-        <span>{new Date(app.appliedDate).toLocaleDateString('en-IN', { 
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric' 
-        })}</span>
-      </div>
-      
-      {app.nextStep && (
-        <div className="p-3 bg-primary/10 rounded-lg">
-          <p className="text-sm">
-            <strong>Next Step:</strong> {app.nextStep}
-          </p>
-        </div>
+          <div className="space-y-2 mb-4">
+            <div className="flex items-center gap-2 text-sm">
+              <Calendar className="size-4 text-muted-foreground" />
+              <span className="text-muted-foreground">Applied:</span>
+              <span>{new Date(app.appliedDate).toLocaleDateString('en-IN', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              })}</span>
+            </div>
+
+            {app.notes && (
+              <div className="p-3 bg-muted rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  <strong>Notes:</strong> {app.notes}
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => app.jobUrl && window.open(app.jobUrl, '_blank')}
+              disabled={!app.jobUrl}
+            >
+              <ExternalLink className="size-4 mr-2" />
+              View Job
+            </Button>
+            
+            <Button 
+              variant="secondary" 
+              size="sm"
+              onClick={() => handleEditApplication(app)}
+            >
+              <Edit className="size-4 mr-2" />
+              Edit
+            </Button>
+
+            <Button 
+              variant="destructive" 
+              size="sm"
+              onClick={() => handleDeleteApplication(app._id)}
+            >
+              <XCircle className="size-4 mr-2" />
+              Delete
+            </Button>
+          </div>
+        </>
       )}
-
-      {app.notes && (
-        <div className="p-3 bg-muted rounded-lg">
-          <p className="text-sm text-muted-foreground">
-            <strong>Notes:</strong> {app.notes}
-          </p>
-        </div>
-      )}
-    </div>
-
-    <div className="flex gap-2">
-      <Button 
-        variant="outline" 
-        size="sm"
-        onClick={() => app.jobUrl && window.open(app.jobUrl, '_blank')}
-        disabled={!app.jobUrl}
-      >
-        <ExternalLink className="size-4 mr-2" />
-        View Job
-      </Button>
-
-      {/* Add Delete Button */}
-      <Button 
-        variant="destructive" 
-        size="sm"
-        onClick={() => handleDeleteApplication(app._id)}
-      >
-        <XCircle className="size-4 mr-2" />
-        Delete
-      </Button>
-
-    </div>
-  </Card>
-);
+    </Card>
+  );
 
   return (
     <DashboardLayout currentPage="applications" onNavigate={onNavigate} userName={user.name}>
@@ -294,144 +443,143 @@ const handleDeleteApplication = async (applicationId: number) => {
         </div>
 
         {/* Add Application Form */}
-
-<Card className="p-6 mb-8">
-  <h2 className="text-lg font-semibold mb-4">Add New Application</h2>
-  <form onSubmit={handleSubmit} className="grid md:grid-cols-2 gap-4">
-    <div>
-      <label className="block text-sm font-medium mb-1">Job Title</label>
-      <input 
-        type="text" 
-        name="jobTitle"
-        value={formData.jobTitle}
-        onChange={handleInputChange}
-        placeholder="e.g. Frontend Developer"
-        className="w-full border rounded-lg p-2"
-        required
-      />
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">Company</label>
-      <input 
-        type="text" 
-        name="company"
-        value={formData.company}
-        onChange={handleInputChange}
-        placeholder="e.g. TechCorp Solutions"
-        className="w-full border rounded-lg p-2"
-        required
-      />
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">Location</label>
-      <input 
-        type="text" 
-        name="location"
-        value={formData.location}
-        onChange={handleInputChange}
-        placeholder="e.g. Bangalore, India"
-        className="w-full border rounded-lg p-2"
-        required
-      />
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">Job URL</label>
-      <input 
-        type="url" 
-        name="jobUrl"
-        value={formData.jobUrl}
-        onChange={handleInputChange}
-        placeholder="e.g. https://company.com/job-posting"
-        className="w-full border rounded-lg p-2"
-      />
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">Status</label>
-      <select 
-        name="status"
-        value={formData.status}
-        onChange={handleInputChange}
-        className="w-full border rounded-lg p-2"
-      >
-        <option value="pending">Pending</option>
-        <option value="interview">Interview</option>
-        <option value="accepted">Accepted</option>
-        <option value="rejected">Rejected</option>
-      </select>
-    </div>
-    <div className="md:col-span-2">
-      <label className="block text-sm font-medium mb-1">Notes</label>
-      <textarea 
-        name="notes"
-        value={formData.notes}
-        onChange={handleInputChange}
-        placeholder="Add any notes about this application..."
-        className="w-full border rounded-lg p-2"
-        rows={3}
-      />
-    </div>
-    <div className="md:col-span-2 flex justify-end">
-      <Button type="submit">Add Application</Button>
-    </div>
-  </form>
-</Card>
+        <Card className="p-6 mb-8">
+          <h2 className="text-lg font-semibold mb-4">Add New Application</h2>
+          <form onSubmit={handleSubmit} className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Job Title</label>
+              <input 
+                type="text" 
+                name="jobTitle"
+                value={formData.jobTitle}
+                onChange={handleInputChange}
+                placeholder="e.g. Frontend Developer"
+                className="w-full border rounded-lg p-2"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Company</label>
+              <input 
+                type="text" 
+                name="company"
+                value={formData.company}
+                onChange={handleInputChange}
+                placeholder="e.g. TechCorp Solutions"
+                className="w-full border rounded-lg p-2"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Location</label>
+              <input 
+                type="text" 
+                name="location"
+                value={formData.location}
+                onChange={handleInputChange}
+                placeholder="e.g. Bangalore, India"
+                className="w-full border rounded-lg p-2"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Job URL</label>
+              <input 
+                type="url" 
+                name="jobUrl"
+                value={formData.jobUrl}
+                onChange={handleInputChange}
+                placeholder="e.g. https://company.com/job-posting"
+                className="w-full border rounded-lg p-2"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Status</label>
+              <select 
+                name="status"
+                value={formData.status}
+                onChange={handleInputChange}
+                className="w-full border rounded-lg p-2"
+              >
+                <option value="pending">Pending</option>
+                <option value="interview">Interview</option>
+                <option value="accepted">Accepted</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium mb-1">Notes</label>
+              <textarea 
+                name="notes"
+                value={formData.notes}
+                onChange={handleInputChange}
+                placeholder="Add any notes about this application..."
+                className="w-full border rounded-lg p-2"
+                rows={3}
+              />
+            </div>
+            <div className="md:col-span-2 flex justify-end">
+              <Button type="submit">Add Application</Button>
+            </div>
+          </form>
+        </Card>
 
         {/* Applications List */}
         {isLoading ? (
-  <Card className="p-12 text-center">
-    <p className="text-muted-foreground">Loading applications...</p>
-  </Card>
-) : (
-        <Tabs defaultValue="all">
-          <TabsList>
-            <TabsTrigger value="all">All ({stats.total})</TabsTrigger>
-            <TabsTrigger value="pending">Pending ({stats.pending})</TabsTrigger>
-            <TabsTrigger value="interview">Interview ({stats.interview})</TabsTrigger>
-            <TabsTrigger value="accepted">Accepted ({stats.accepted})</TabsTrigger>
-            <TabsTrigger value="rejected">Rejected ({stats.rejected})</TabsTrigger>
-          </TabsList>
+          <Card className="p-12 text-center">
+            <p className="text-muted-foreground">Loading applications...</p>
+          </Card>
+        ) : (
+          <Tabs defaultValue="all">
+            <TabsList>
+              <TabsTrigger value="all">All ({stats.total})</TabsTrigger>
+              <TabsTrigger value="pending">Pending ({stats.pending})</TabsTrigger>
+              <TabsTrigger value="interview">Interview ({stats.interview})</TabsTrigger>
+              <TabsTrigger value="accepted">Accepted ({stats.accepted})</TabsTrigger>
+              <TabsTrigger value="rejected">Rejected ({stats.rejected})</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="all" className="mt-6 space-y-4">
-            {applications.map(app => <ApplicationCard key={app._id} app={app} />)}
-          </TabsContent>
+            <TabsContent value="all" className="mt-6 space-y-4">
+              {applications.map(app => <ApplicationCard key={app._id} app={app} />)}
+            </TabsContent>
 
-          <TabsContent value="pending" className="mt-6 space-y-4">
-            {filterByStatus('pending').map(app => <ApplicationCard key={app._id} app={app} />)}
-            {filterByStatus('pending').length === 0 && (
-              <Card className="p-12 text-center">
-                <p className="text-muted-foreground">No pending applications</p>
-              </Card>
-            )}
-          </TabsContent>
+            <TabsContent value="pending" className="mt-6 space-y-4">
+              {filterByStatus('pending').map(app => <ApplicationCard key={app._id} app={app} />)}
+              {filterByStatus('pending').length === 0 && (
+                <Card className="p-12 text-center">
+                  <p className="text-muted-foreground">No pending applications</p>
+                </Card>
+              )}
+            </TabsContent>
 
-          <TabsContent value="interview" className="mt-6 space-y-4">
-            {filterByStatus('interview').map(app => <ApplicationCard key={app._id} app={app} />)}
-            {filterByStatus('interview').length === 0 && (
-              <Card className="p-12 text-center">
-                <p className="text-muted-foreground">No interviews scheduled</p>
-              </Card>
-            )}
-          </TabsContent>
+            <TabsContent value="interview" className="mt-6 space-y-4">
+              {filterByStatus('interview').map(app => <ApplicationCard key={app._id} app={app} />)}
+              {filterByStatus('interview').length === 0 && (
+                <Card className="p-12 text-center">
+                  <p className="text-muted-foreground">No interviews scheduled</p>
+                </Card>
+              )}
+            </TabsContent>
 
-          <TabsContent value="accepted" className="mt-6 space-y-4">
-            {filterByStatus('accepted').map(app => <ApplicationCard key={app._id} app={app} />)}
-            {filterByStatus('accepted').length === 0 && (
-              <Card className="p-12 text-center">
-                <p className="text-muted-foreground">No accepted offers yet</p>
-              </Card>
-            )}
-          </TabsContent>
+            <TabsContent value="accepted" className="mt-6 space-y-4">
+              {filterByStatus('accepted').map(app => <ApplicationCard key={app._id} app={app} />)}
+              {filterByStatus('accepted').length === 0 && (
+                <Card className="p-12 text-center">
+                  <p className="text-muted-foreground">No accepted offers yet</p>
+                </Card>
+              )}
+            </TabsContent>
 
-          <TabsContent value="rejected" className="mt-6 space-y-4">
-            {filterByStatus('rejected').map(app => <ApplicationCard key={app._id} app={app} />)}
-            {filterByStatus('rejected').length === 0 && (
-              <Card className="p-12 text-center">
-                <p className="text-muted-foreground">No rejected applications</p>
-              </Card>
-            )}
-          </TabsContent>
-        </Tabs>
-)}
+            <TabsContent value="rejected" className="mt-6 space-y-4">
+              {filterByStatus('rejected').map(app => <ApplicationCard key={app._id} app={app} />)}
+              {filterByStatus('rejected').length === 0 && (
+                <Card className="p-12 text-center">
+                  <p className="text-muted-foreground">No rejected applications</p>
+                </Card>
+              )}
+            </TabsContent>
+          </Tabs>
+        )}
       </div>
     </DashboardLayout>
   );
