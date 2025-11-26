@@ -1,4 +1,3 @@
-
 import { ReactNode, useState } from 'react';
 import { 
   LayoutDashboard, User, FileText, Upload, TrendingUp, 
@@ -95,18 +94,8 @@ export function DashboardLayout({
         <SidebarContent />
       </aside>
 
-      {/* Mobile Layout */}
       <div className="flex flex-1 flex-col">
-        {/* Mobile Top Bar */}
         <header className="flex h-16 items-center justify-between px-4 border-b border-border bg-card lg:hidden">
-          <div className="flex items-center gap-2">
-            <div className="size-8 bg-primary rounded-lg flex items-center justify-center">
-              <Sparkles className="size-5 text-primary-foreground" />
-            </div>
-            <h2 className="text-lg font-semibold text-primary">CareerPilot</h2>
-          </div>
-
-          {/* Hamburger Menu */}
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
@@ -122,9 +111,15 @@ export function DashboardLayout({
               <SidebarContent />
             </SheetContent>
           </Sheet>
+
+          <div className="flex items-center gap-2">
+            <div className="size-8 bg-primary rounded-lg flex items-center justify-center">
+              <Sparkles className="size-5 text-primary-foreground" />
+            </div>
+            <h2 className="text-lg font-semibold text-primary">CareerPilot</h2>
+          </div>
         </header>
 
-        {/* Main Content */}
         <main className="flex-1 overflow-auto bg-background">
           {children}
         </main>

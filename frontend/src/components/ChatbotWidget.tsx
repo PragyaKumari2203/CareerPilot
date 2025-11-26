@@ -98,10 +98,9 @@ export function ChatbotWidget() {
   // Floating button when closed
   if (!isOpen) {
     return (
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 size-14 bg-primary text-primary-foreground rounded-full shadow-lg hover:shadow-xl transition-shadow flex items-center justify-center z-50"
-      >
+      <button 
+      onClick={() => setIsOpen(true)}
+      className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 size-12 sm:size-14 bg-primary text-primary-foreground rounded-full shadow-lg hover:shadow-xl transition-shadow flex items-center justify-center z-50">
         <MessageSquare className="size-6" />
       </button>
     );
@@ -109,18 +108,16 @@ export function ChatbotWidget() {
 
   // Main chat window
   return (
-    <Card className="fixed bottom-6 right-6 w-96 h-[600px] shadow-2xl flex flex-col z-50">
+    <Card className="fixed bottom-4 right-4 w-[calc(100vw-2rem)] sm:w-96 h-[500px] sm:h-[600px] max-w-[calc(100vw-2rem)] shadow-2xl flex flex-col z-50">
       {/* Header */}
-      <div className="p-4 border-b border-border flex items-center justify-between bg-primary text-primary-foreground rounded-t-lg">
+      <div className="p-3 sm:p-4 border-b border-border flex items-center justify-between bg-primary text-primary-foreground rounded-t-lg">
         <div className="flex items-center gap-2">
-          <div className="size-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
-            <Sparkles className="size-4" />
+          <div className="size-6 sm:size-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
+  <Sparkles className="size-3 sm:size-4" />
           </div>
           <div>
-            <h4>AI Career Assistant</h4>
-            <p className="text-xs text-primary-foreground/80">
-              Always here to help
-            </p>
+            <h4 className="text-sm sm:text-base">AI Career Assistant</h4>
+<p className="text-xs text-primary-foreground/80 hidden sm:block">Always here to help</p>
           </div>
         </div>
         <Button
@@ -134,7 +131,7 @@ export function ChatbotWidget() {
       </div>
 
       {/* Messages */}
-      <ScrollArea className="p-4 h-[450px] overflow-y-auto">
+      <ScrollArea className="p-3 sm:p-4 h-[350px] sm:h-[450px] overflow-y-auto">
         <div className="space-y-4">
           {messages.map((message) => (
             <div
@@ -144,7 +141,7 @@ export function ChatbotWidget() {
               }`}
             >
               <div
-                className={`max-w-[80%] rounded-lg p-3 ${
+                className={`max-w-[85%] sm:max-w-[80%] rounded-lg p-2 sm:p-3 ${
                   message.role === "user"
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted"
@@ -185,7 +182,7 @@ export function ChatbotWidget() {
 
       {/* Quick Prompts */}
       {messages.length <= 1 && (
-        <div className="p-4 border-t border-border">
+  <div className="p-3 sm:p-4 border-t border-border">
           <p className="text-xs text-muted-foreground mb-2">Quick questions:</p>
           <div className="flex flex-wrap gap-2">
             {quickPrompts.map((prompt) => (
@@ -202,7 +199,7 @@ export function ChatbotWidget() {
       )}
 
       {/* Input */}
-      <div className="p-4 border-t border-border bg-background">
+      <div className="p-3 sm:p-4 border-t border-border bg-background">
         <div className="flex gap-2">
           <Input
             value={input}

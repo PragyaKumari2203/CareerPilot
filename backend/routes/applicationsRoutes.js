@@ -42,6 +42,66 @@ router.post('/', async (req, res) => {
   }
 });
 
+// PUT update application
+router.put('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    console.log('Updating application ID:', id);
+    console.log('Update data:', updateData);
+
+    // Update only allowed fields
+    const allowedFields = ['jobTitle', 'company', 'location', 'status', 'notes', 'jobUrl', 'nextStep'];
+    const updateFields = {};
+    
+    allowedFields.forEach(field => {
+      if (updateData[field] !== undefined) {
+        updateFields[field] = updateData[field];
+      }
+    });
+
+    console.log('Fields to update:', updateFields);
+
+    const updatedApplication = await Application.findByIdAndUpdate(
+      id,
+      updateFields,
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedApplication) {
+      console.log('Application not found with ID:', id);
+      return res.status(404).json({ message: 'Application not found' });
+    }
+
+    console.log('Successfully updated application:', updatedApplication);
+    res.json(updatedApplication);
+    
+  } catch (error) {
+    console.error('Error updating application:', error);
+    console.error('Error details:', error.message);
+    
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ 
+        message: 'Validation error', 
+        error: error.message 
+      });
+    }
+    
+    if (error.name === 'CastError') {
+      return res.status(400).json({ 
+        message: 'Invalid application ID', 
+        error: error.message 
+      });
+    }
+    
+    res.status(500).json({ 
+      message: 'Error updating application', 
+      error: error.message 
+    });
+  }
+});
+
 // DELETE application
 router.delete('/:id', async (req, res) => {
   try {

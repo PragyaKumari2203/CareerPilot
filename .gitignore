@@ -85,5 +85,3 @@ dist/
 
 # === Temporary files ===
 tmp.txt
-
-backend/.env

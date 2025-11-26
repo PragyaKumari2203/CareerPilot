@@ -598,35 +598,35 @@ export function ResumeBuilder({
   ];
 
   return (
-    <div className="bg-white text-black p-8 space-y-6">
+    <div className="bg-white text-black p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
 
       {/* HEADER */}
       <div className="text-center border-b-2 border-black pb-4">
-        <h1 className="text-3xl mb-2">{user.name || "Your Name"}</h1>
+        <h1 className="text-2xl sm:text-3xl mb-2">{user.name || "Your Name"}</h1>
 
         {/* Contact */}
-        {savedData.phone && <p className="text-sm">📞 {savedData.phone}</p>}
-        {savedData.address && <p className="text-sm">🏠 {savedData.address}</p>}
+        {savedData.phone && <p className="text-xs sm:text-sm">📞 {savedData.phone}</p>}
+        {savedData.address && <p className="text-xs sm:text-sm">🏠 {savedData.address}</p>}
         
-        <p className="text-sm">{user.email}</p>
+        <p className="text-xs sm:text-sm">{user.email}</p>
 
         {user.linkedin && (
-          <p className="text-sm">🔗 LinkedIn: {user.linkedin}</p>
+          <p className="text-xs sm:text-sm">🔗 LinkedIn: {user.linkedin}</p>
         )}
 
         {user.github && (
-          <p className="text-sm">🐱 GitHub: {user.github}</p>
+          <p className="text-xs sm:text-sm">🐱 GitHub: {user.github}</p>
         )}
 
         {user.portfolio && (
-          <p className="text-sm">💼 Portfolio: {user.portfolio}</p>
+          <p className="text-xs sm:text-sm">💼 Portfolio: {user.portfolio}</p>
         )}
       </div>
 
       {/* EDUCATION */}
       {savedData.educations?.some(e => e.degree) && (
         <div>
-          <h2 className="text-xl mb-2 border-b border-gray-300">Education</h2>
+          <h2 className="text-lg sm:text-xl mb-2 border-b border-gray-300">Education</h2>
           <div className="space-y-3">
             {savedData.educations
               .filter(e => e.degree)
@@ -648,7 +648,7 @@ export function ResumeBuilder({
       {/* SUMMARY */}
       {savedData.summary && (
         <div>
-          <h2 className="text-xl mb-2 border-b border-gray-300">
+         <h2 className="text-lg sm:text-xl mb-2 border-b border-gray-300">
             Professional Summary
           </h2>
           <p className="text-sm">{savedData.summary}</p>
@@ -658,7 +658,7 @@ export function ResumeBuilder({
       {/* SKILLS (DIRECTLY FROM USER MODEL) */}
       {allSkills.length > 0 && (
         <div>
-          <h2 className="text-xl mb-2 border-b border-gray-300">Skills</h2>
+          <h2 className="text-lg sm:text-xl mb-2 border-b border-gray-300">Skills</h2>
           <div className="flex flex-wrap gap-2">
             {allSkills.map((skill, idx) => (
               <span
@@ -675,7 +675,7 @@ export function ResumeBuilder({
       {/* EXPERIENCE */}
       {savedData.experiences?.some(e => e.title) && (
         <div>
-          <h2 className="text-xl mb-2 border-b border-gray-300">Experience</h2>
+          <h2 className="text-lg sm:text-xl mb-2 border-b border-gray-300">Experience</h2>
           <div className="space-y-3">
             {savedData.experiences
               .filter(e => e.title)
@@ -695,7 +695,7 @@ export function ResumeBuilder({
       {/* PROJECTS */}
       {savedData.projects?.some(p => p.name) && (
         <div>
-          <h2 className="text-xl mb-2 border-b border-gray-300">Projects</h2>
+          <h2 className="text-lg sm:text-xl mb-2 border-b border-gray-300">Projects</h2>
           <div className="space-y-3">
             {savedData.projects
               .filter(p => p.name)
@@ -715,7 +715,7 @@ export function ResumeBuilder({
       {/* CERTIFICATIONS */}
       {savedData.certifications?.some(c => c) && (
         <div>
-          <h2 className="text-xl mb-2 border-b border-gray-300">Certifications</h2>
+          <h2 className="text-lg sm:text-xl mb-2 border-b border-gray-300">Certifications</h2>
           <ul className="list-disc pl-5 text-sm">
             {savedData.certifications
               .filter(c => c)
@@ -729,7 +729,7 @@ export function ResumeBuilder({
       {/* HOBBIES */}
       {savedData.hobbies?.some(h => h) && (
         <div>
-          <h2 className="text-xl mb-2 border-b border-gray-300">
+         <h2 className="text-lg sm:text-xl mb-2 border-b border-gray-300">
             Hobbies & Interests
           </h2>
           <ul className="list-disc pl-5 text-sm">
@@ -746,10 +746,10 @@ export function ResumeBuilder({
 };
 
   const HistoryTab = () => (
-    <div className="max-w-4xl space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-semibold">Resume History</h2>
+          <h2 className="text-xl sm:text-2xl font-semibold">Resume History</h2>
           <p className="text-muted-foreground">
             You can save up to 3 resumes. Load or delete existing resumes.
           </p>
@@ -777,8 +777,8 @@ export function ResumeBuilder({
       ) : (
         <div className="grid gap-4">
           {resumeHistory.map((resume) => (
-            <Card key={resume._id} className="p-6">
-              <div className="flex items-start justify-between">
+            <Card key={resume._id} className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                 <div className="flex-1">
                   <h3 className="text-xl font-semibold mb-2">
                     {resume.resumeName}
@@ -821,7 +821,7 @@ export function ResumeBuilder({
                     </div>
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Button
                     variant="outline"
                     size="sm"
@@ -861,17 +861,17 @@ export function ResumeBuilder({
       onNavigate={onNavigate}
       userName={user.name}
     >
-        <div className="p-8">
-    <div className="mb-8 flex items-center justify-between">
+       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+    <div className="mb-8 max-w-4xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div>
-        <h1 className="mb-2">Resume Builder</h1>
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl mb-2">Resume Builder</h1>
         <p className="text-muted-foreground">
           Create a professional resume using your profile data
         </p>
 
         {/* How It Works */}
-        <div className="mt-6 max-w-xl">
-          <h2 className="text-base font-semibold mb-1">How it works</h2>
+        <div className="mt-4 sm:mt-6 max-w-xl">
+  <h2 className="text-sm sm:text-base font-semibold mb-1">How it works</h2>
           <p className="text-sm text-muted-foreground leading-relaxed">
             Your data is saved locally when you click the save button. Only then
             can you preview the resume template. Once you're satisfied with how
@@ -881,7 +881,7 @@ export function ResumeBuilder({
         </div>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Button
           variant="outline"
           onClick={() => setShowHistory(!showHistory)}
@@ -935,10 +935,10 @@ export function ResumeBuilder({
             <ResumePreview />
           </Card>
         ) : (
-          <div className="max-w-4xl space-y-6">
+          <div className="max-w-4xl mx-auto space-y-6">
             {/* Resume Name */}
-            <Card className="p-6">
-              <h3 className="mb-4">Resume Name</h3>
+            <Card className="p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg mb-4">Resume Name</h3>
               <Input
                 value={resumeName}
                 onChange={(e) => setResumeName(e.target.value)}
@@ -960,8 +960,8 @@ export function ResumeBuilder({
             </Card>
 
             {/* Professional Summary */}
-            <Card className="p-6">
-              <h3 className="mb-4">Professional Summary</h3>
+            <Card className="p-4 sm:p-6">
+             <h3 className="text-base sm:text-lg mb-4">Professional Summary</h3>
               <Textarea
                 value={summary}
                 onChange={(e) => setSummary(e.target.value)}
@@ -971,7 +971,7 @@ export function ResumeBuilder({
             </Card>
 
             {/* Education */}
-            <Card className="p-6">
+            <Card className="p-4 sm:p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3>Education</h3>
                 <Button
@@ -987,7 +987,7 @@ export function ResumeBuilder({
                 {educations.map((edu, index) => (
                   <div
                     key={index}
-                    className="p-4 border border-border rounded-lg space-y-3"
+                     className="p-3 sm:p-4 border border-border rounded-lg space-y-3"
                   >
                     <div className="flex justify-between items-start">
                       <h4>Education {index + 1}</h4>
@@ -1066,8 +1066,8 @@ export function ResumeBuilder({
             </Card>
 
             {/* Contact & Links */}
-            <Card className="p-6">
-              <h3 className="mb-4">Contact & Links</h3>
+            <Card className="p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg mb-4">Contact & Links</h3>
               <div className="grid md:grid-cols-2 gap-3">
                 <div>
                   <Label>Phone</Label>
@@ -1118,7 +1118,7 @@ export function ResumeBuilder({
             </Card>
 
             {/* Certifications */}
-            <Card className="p-6">
+            <Card className="p-4 sm:p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3>Certifications</h3>
                 <Button
@@ -1155,7 +1155,7 @@ export function ResumeBuilder({
             </Card>
 
             {/* Hobbies */}
-            <Card className="p-6">
+            <Card className="p-4 sm:p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3>Hobbies & Interests</h3>
                 <Button variant="outline" size="sm" onClick={handleAddHobby}>
@@ -1186,7 +1186,7 @@ export function ResumeBuilder({
             </Card>
 
             {/* Experience Section */}
-            <Card className="p-6">
+           <Card className="p-4 sm:p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3>Work Experience</h3>
                 <Button
@@ -1202,10 +1202,10 @@ export function ResumeBuilder({
                 {experiences.map((exp, index) => (
                   <div
                     key={index}
-                    className="p-4 border border-border rounded-lg space-y-3"
+                     className="p-3 sm:p-4 border border-border rounded-lg space-y-3"
                   >
                     <div className="flex justify-between items-start">
-                      <h4>Experience {index + 1}</h4>
+                      <h4 className="text-sm sm:text-base">Experience {index + 1}</h4>
                       {experiences.length > 1 && (
                         <Button
                           variant="ghost"
@@ -1285,7 +1285,7 @@ export function ResumeBuilder({
             </Card>
 
             {/* Projects Section */}
-            <Card className="p-6">
+            <Card className="p-4 sm:p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3>Projects</h3>
                 <Button variant="outline" size="sm" onClick={handleAddProject}>
@@ -1297,7 +1297,7 @@ export function ResumeBuilder({
                 {projects.map((proj, index) => (
                   <div
                     key={index}
-                    className="p-4 border border-border rounded-lg space-y-3"
+                     className="p-3 sm:p-4 border border-border rounded-lg space-y-3"
                   >
                     <div className="flex justify-between items-start">
                       <h4>Project {index + 1}</h4>
